@@ -1,144 +1,143 @@
 const { comparePassword } = require("../helpers/bcrypt");
-const { signToken } = require('../helpers/jwt')
-const { User } = require("../models")
+const { signToken } = require("../helpers/jwt");
+const { User } = require("../models");
+const verifyGoogleToken = require("../helpers/verifyGoogleToken");
+
 module.exports = class UserController {
-    static async register(req, res, next) {
+    static async register(req, res) {
         try {
-            const { fullName, email, password, googleId, authType } = req.body;
+            const { fullName, email, password, googleToken, authType } = req.body;
 
             if (!authType) {
-                return res.status(400).json({ message: "AuthType is required! ('manual' or 'google')" });
+                return res.status(400).json({ message: "authType is required ('manual' or 'google')" });
             }
 
-            if (authType === 'manual') {
-                if (!password) {
-                    return res.status(400).json({ message: "Password is required for manual registration!" });
+            // Manual Register
+            if (authType === "manual") {
+                if (!password || !email || !fullName) {
+                    return res.status(400).json({ message: "Full name, email, and password are required" });
                 }
 
                 const user = await User.create({
                     fullName,
                     email,
                     password,
-                    authType: 'manual'
+                    authType: "manual"
                 });
 
                 return res.status(201).json({
                     id: user.id,
                     email: user.email,
-                    message: 'User registered manually'
+                    message: "User registered manually"
                 });
 
-            } else if (authType === 'google') {
-                if (!googleId || !email) {
-                    return res.status(400).json({ message: "googleId and email are required for Google registration" });
+            } else if (authType === "google") {
+                // Google Register
+                if (!googleToken) {
+                    return res.status(400).json({ message: "Google token is required" });
                 }
 
-                let user = await User.findOne({ where: { googleId } });
+                const payload = await verifyGoogleToken(googleToken);
+
+                let user = await User.findOne({ where: { googleId: payload.googleId } });
 
                 if (!user) {
                     user = await User.create({
-                        fullName,
-                        email,
-                        googleId,
-                        password: 'default_google',
-                        authType: 'google'
+                        fullName: payload.fullName,
+                        email: payload.email,
+                        googleId: payload.googleId,
+                        password: "from_google",
+                        authType: "google"
                     });
                 }
 
                 return res.status(201).json({
                     id: user.id,
                     email: user.email,
-                    message: 'User registered with Google'
+                    message: "User registered with Google"
                 });
-
             } else {
                 return res.status(400).json({ message: "authType must be 'manual' or 'google'" });
             }
-
-        } catch (error) {
-            console.log(error);
-            if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
-                return res.status(400).json({ message: error.errors[0].message });
-            } else {
-                return res.status(500).json({ message: "Internal server error" });
+        } catch (err) {
+            console.error(err);
+            if (err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError") {
+                return res.status(400).json({ message: err.errors[0].message });
             }
+            return res.status(500).json({ message: "Internal server error" });
         }
     }
 
-    static async login(req, res, next) {
+    static async login(req, res) {
         try {
-            const { email, password, googleId } = req.body;
+            const { email, password, googleToken } = req.body;
 
-            if (googleId) {
-                const ticket = await client.verifyIdToken({
-                    idToken: googleId,
-                    audience: process.env.GOOGLE_CLIENT_ID
-                });
+            // Google Login
+            if (googleToken) {
+                const payload = await verifyGoogleToken(googleToken);
 
-                const payload = ticket.getPayload();
-                const [user, created] = await User.findOrCreate({
-                    where: { email: payload.email },
-                    defaults: {
-                        fullName: payload.name,
+                let user = await User.findOne({ where: { googleId: payload.googleId } });
+
+                if (!user) {
+                    user = await User.create({
+                        fullName: payload.fullName,
                         email: payload.email,
-                        googleId: payload.sub,
-                        password: 'from_google',
-                        authType: 'google'
-                    }
-                });
+                        googleId: payload.googleId,
+                        password: "from_google",
+                        authType: "google"
+                    });
+                }
 
                 const access_token = signToken({ id: user.id });
                 return res.status(200).json({ access_token });
             }
 
+            // Manual Login
             if (!email || !password) {
-                return res.status(400).json({ message: 'Email and password are required' });
+                return res.status(400).json({ message: "Email and password are required" });
             }
 
             const user = await User.findOne({ where: { email } });
-            if (!user || user.authType !== 'manual') {
-                return res.status(401).json({ message: 'Invalid email/password' });
+
+            if (!user || user.authType !== "manual") {
+                return res.status(401).json({ message: "Invalid email/password" });
             }
 
-            const validPassword = comparePassword(password, user.password);
-            if (!validPassword) {
-                return res.status(401).json({ message: 'Invalid email/password' });
+            const isValid = comparePassword(password, user.password);
+
+            if (!isValid) {
+                return res.status(401).json({ message: "Invalid email/password" });
             }
 
             const access_token = signToken({ id: user.id });
-            res.status(200).json({ access_token });
+            return res.status(200).json({ access_token });
+
         } catch (err) {
-            next(err);
+            console.error(err);
+            return res.status(500).json({ message: "Internal server error" });
         }
     }
 
     static async profile(req, res) {
         try {
             const user = await User.findByPk(req.user.id, {
-                attributes: { exclude: ['password'] }
+                attributes: { exclude: ["password"] }
             });
 
             if (!user) {
-                return res.status(404).json({ message: 'User not found' });
+                return res.status(404).json({ message: "User not found" });
             }
 
             res.status(200).json(user);
         } catch (err) {
             console.error(err);
-            res.status(500).json({ message: 'Internal server error' });
+            res.status(500).json({ message: "Internal server error" });
         }
     }
 
     static async editProfile(req, res) {
         try {
-            const {
-                nik,
-                fullName,
-                gender,
-                phoneNumber,
-                address,
-                profilePicture
-            } = req.body;
+            const { nik, fullName, gender, phoneNumber, address, profilePicture } = req.body;
 
             const [updated] = await User.update(
                 { nik, fullName, gender, phoneNumber, address, profilePicture },
@@ -146,20 +145,20 @@ module.exports = class UserController {
             );
 
             if (!updated) {
-                return res.status(404).json({ message: 'User not found or no changes made' });
+                return res.status(404).json({ message: "User not found or no changes made" });
             }
 
             const updatedUser = await User.findByPk(req.user.id, {
-                attributes: { exclude: ['password'] }
+                attributes: { exclude: ["password"] }
             });
 
             res.status(200).json(updatedUser);
         } catch (err) {
             console.error(err);
-            if (err.name === 'SequelizeValidationError' || err.name === 'SequelizeUniqueConstraintError') {
+            if (err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError") {
                 return res.status(400).json({ message: err.errors[0].message });
             }
-            res.status(500).json({ message: 'Internal server error' });
+            res.status(500).json({ message: "Internal server error" });
         }
     }
-}
+};
