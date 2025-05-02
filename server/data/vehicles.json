@@ -1,0 +1,42 @@
+[
+    {
+        "vehicleName": "Bus SHD",
+        "capacity": 50,
+        "pricePerDay": 2000000
+    },
+    {
+        "vehicleName": "Bus HDD",
+        "capacity": 50,
+        "pricePerDay": 1800000
+    },
+    {
+        "vehicleName": "HD Bus",
+        "capacity": 50,
+        "pricePerDay": 1600000
+    },
+    {
+        "vehicleName": "Bus Medium Seat 35",
+        "capacity": 35,
+        "pricePerDay": 1300000
+    },
+    {
+        "vehicleName": "Bus Medium Seat 40",
+        "capacity": 40,
+        "pricePerDay": 1800000
+    },
+    {
+        "vehicleName": "Elf/Hiace",
+        "capacity": 19,
+        "pricePerDay": 900000
+    },
+    {
+        "vehicleName": "Elf Giga",
+        "capacity": 20,
+        "pricePerDay": 1100000
+    },
+    {
+        "vehicleName": "Mobil",
+        "capacity": 7,
+        "pricePerDay": 225000
+    }
+]
