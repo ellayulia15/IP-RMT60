@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
     profilePicture: DataTypes.STRING,
     phoneNumber: DataTypes.STRING,
     address: DataTypes.STRING,
-    googleId: DataTypes.STRING,
+    googleToken: DataTypes.STRING,
     authType: {
       type: DataTypes.STRING,
       allowNull: false,

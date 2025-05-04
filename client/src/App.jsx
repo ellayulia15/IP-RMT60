@@ -1,13 +1,16 @@
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter, Routes, Route, Outlet } from "react-router";
+
 import LandingPage from "./pages/LandingPages";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import PackageList from "./pages/PackageList";
 import PackageDetail from "./pages/PackageDetail";
+import ViewProfilePage from './pages/ViewProfilePage';
+import EditProfilePage from './pages/EditProfilePage';
+
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import ProfilePage from './pages/ProfilePage';
 
 function Layout() {
   return (
@@ -31,7 +34,8 @@ function App() {
             <Route path="/packages/:id" element={<PackageDetail />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile" element={<ViewProfilePage />} />
+            <Route path="/profile/edit" element={<EditProfilePage />} />
           </Route>
         </Routes>
       </BrowserRouter>

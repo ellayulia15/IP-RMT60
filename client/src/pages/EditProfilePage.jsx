@@ -1,24 +1,33 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-function ProfilePage() {
+function EditProfilePage() {
     const [profile, setProfile] = useState(null);
     const [form, setForm] = useState({});
     const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(true);
 
     const token = localStorage.getItem("access_token");
 
     useEffect(() => {
         const fetchProfile = async () => {
+            if (!token) {
+                setMessage("Anda belum login");
+                setLoading(false);
+                return;
+            }
+
             try {
-                const { data } = await axios.get("http://localhost:3000/profile", {
+                const { data } = await axios.get("http://localhost:3000/user", {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setProfile(data);
                 setForm(data);
             } catch (err) {
-                console.error(err);
-                setMessage("Gagal memuat profil");
+                console.error("Gagal fetch profile:", err);
+                setMessage(err.response?.data?.message || "Gagal memuat profil");
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -37,7 +46,7 @@ function ProfilePage() {
         try {
             setMessage("");
             const { data } = await axios.put(
-                "http://localhost:3000/profile",
+                "http://localhost:3000/user",
                 form,
                 {
                     headers: { Authorization: `Bearer ${token}` },
@@ -46,12 +55,18 @@ function ProfilePage() {
             setProfile(data);
             setMessage("Profil berhasil diperbarui");
         } catch (err) {
-            console.error(err);
+            console.error("Gagal update profile:", err);
             setMessage(err.response?.data?.message || "Gagal memperbarui profil");
         }
     };
 
-    if (!profile) return <div className="text-center mt-10">Memuat profil...</div>;
+    if (loading) return <div className="text-center mt-10">Memuat profil...</div>;
+
+    if (!profile) return (
+        <div className="text-center mt-10 text-red-500">
+            {message || "Terjadi kesalahan saat memuat profil"}
+        </div>
+    );
 
     return (
         <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded-lg">
@@ -62,9 +77,20 @@ function ProfilePage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-                <Input label="Nama Lengkap" name="fullName" value={form.fullName} onChange={handleChange} />
+                <Input label="Nama Lengkap" name="fullName" value={form.fullName || ""} onChange={handleChange} />
                 <Input label="NIK" name="nik" value={form.nik || ""} onChange={handleChange} />
-                <Input label="Jenis Kelamin" name="gender" value={form.gender || ""} onChange={handleChange} />
+                {/* <Input label="Jenis Kelamin" name="gender" value={form.gender || ""} onChange={handleChange} /> */}
+                <label className="block text-sm font-medium mb-1">Jenis Kelamin</label>
+                <select
+                    name="gender"
+                    value={form.gender || ""}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring focus:ring-green-300 focus:outline-none"
+                >
+                    <option value="">-- Pilih --</option>
+                    <option value="Pria">Pria</option>
+                    <option value="Wanita">Wanita</option>
+                </select>
                 <Input label="Nomor Telepon" name="phoneNumber" value={form.phoneNumber || ""} onChange={handleChange} />
                 <Input label="Alamat" name="address" value={form.address || ""} onChange={handleChange} />
                 <Input label="URL Foto Profil" name="profilePicture" value={form.profilePicture || ""} onChange={handleChange} />
@@ -92,4 +118,4 @@ function Input({ label, ...props }) {
     );
 }
 
-export default ProfilePage;
+export default EditProfilePage;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router';
 
@@ -29,6 +29,35 @@ function LoginPage() {
             }
         }
     };
+
+    async function handleCredentialResponse(response) {
+        try {
+            const { data } = await axios.post('http://localhost:3000/login/google', {
+                googleToken: response.credential,
+            });
+            console.log(data);
+
+            localStorage.setItem('access_token', data.access_token);
+            navigate('/profile');
+        } catch (err) {
+            console.error('Google login error:', err);
+            setError(err.response?.data?.message || 'Login dengan Google gagal');
+        }
+    }
+
+    useEffect(() => {
+        window.google.accounts.id.initialize({
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+            callback: handleCredentialResponse,
+        });
+
+        window.google.accounts.id.renderButton(
+            document.getElementById("buttonDiv"),
+            { theme: "outline", size: "large" }
+        );
+
+        window.google.accounts.id.prompt();
+    }, []); // <== Tambahkan dependency array kosong di sini
 
     return (
         <div className="min-h-screen bg-[#A7D7A7] flex items-center justify-center px-4">
@@ -73,6 +102,10 @@ function LoginPage() {
                         Masuk
                     </button>
                 </form>
+
+                <div className="my-4 text-center text-gray-500">atau</div>
+
+                <div id="buttonDiv" className="flex justify-center"></div>
 
                 <p className="text-center text-sm mt-6 text-gray-600">
                     Belum punya akun?{' '}

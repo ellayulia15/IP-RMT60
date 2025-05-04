@@ -16,6 +16,7 @@ app.use(express.json())
 
 app.post('/register', UserController.register)
 app.post('/login', UserController.login)
+app.post('/login/google', UserController.googleLogin)
 app.get('/user', authentication, UserController.profile)
 app.put('/user', authentication, UserController.editProfile)
 
