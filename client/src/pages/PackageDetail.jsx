@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -10,6 +10,7 @@ function extractFileId(url) {
 export default function PackageDetail() {
     const { id } = useParams();
     const [packageDetail, setPackageDetail] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchPackageDetail = async () => {
@@ -23,6 +24,32 @@ export default function PackageDetail() {
 
         fetchPackageDetail();
     }, [id]);
+
+    const handleOrder = async () => {
+        try {
+            const token = localStorage.getItem("access_token");
+            if (!token) return alert("Kamu harus login terlebih dahulu!");
+
+            const response = await axios.post(
+                "http://localhost:3000/order",
+                {
+                    PackageId: +id,
+                    bookingDate: new Date(),
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            alert("Paket berhasil dipesan!");
+            navigate("/order");
+        } catch (error) {
+            console.error("Gagal memesan paket:", error);
+            alert("Gagal memesan paket");
+        }
+    };
 
     if (!packageDetail) {
         return <div className="text-center mt-10">Loading...</div>;
@@ -44,14 +71,22 @@ export default function PackageDetail() {
                 Mulai dari Rp{parseInt(packageDetail.startPrice).toLocaleString()}
             </p>
 
-            <a
-                href={`https://drive.google.com/uc?export=download&id=${extractFileId(packageDetail.pdfLink)}`}
-                className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Download Itinerary
-            </a>
+            <div className="flex gap-4">
+                <a
+                    href={`https://drive.google.com/uc?export=download&id=${extractFileId(packageDetail.pdfLink)}`}
+                    className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Download Itinerary
+                </a>
+                <button
+                    onClick={handleOrder}
+                    className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                >
+                    Pesan Sekarang
+                </button>
+            </div>
         </div>
     );
 }

@@ -23,17 +23,16 @@ export default function Navbar() {
                 <nav className="space-x-4">
                     <Link to="/" className="hover:underline">Beranda</Link>
                     <Link to="/packages" className="hover:underline">Paket Wisata</Link>
-                    <Link to="/" className="hover:underline">Sewa Kendaraan</Link>
+                    <Link to="/vehicles/" className="hover:underline">Sewa Kendaraan</Link>
 
                     {isLoggedIn ? (
                         <>
                             <Link to="/profile" className="hover:underline">Profil</Link>
-                            <Link to="/profile" className="hover:underline">Riwayat</Link>
+                            <Link to="/order/history" className="hover:underline">Riwayat</Link>
                             <button onClick={handleLogout} className="hover:underline">Keluar</button>
                         </>
                     ) : (
                         <>
-                            {/* <Link to="/register" className="hover:underline">Daftar</Link> */}
                             <Link to="/login" className="hover:underline">Masuk</Link>
                         </>
                     )}

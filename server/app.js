@@ -9,6 +9,7 @@ const app = express()
 const port = 3000
 
 const cors = require('cors');
+const VehicleController = require('./controllers/VehicleController');
 app.use(cors());
 
 app.use(express.urlencoded({ extended: false }))
@@ -24,7 +25,9 @@ app.get('/packages', PackageController.packages)
 app.get('/packages/:id', PackageController.packageById)
 app.get('/packages/:id/download', PackageController.downloadPdf)
 
-app.post('/order', authentication, OrderController.order)
+app.get('/vehicles', VehicleController.vehicles)
+
+app.post('/order/:PackageId', authentication, OrderController.order)
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)

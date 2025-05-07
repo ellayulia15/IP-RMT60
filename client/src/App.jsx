@@ -8,6 +8,8 @@ import PackageList from "./pages/PackageList";
 import PackageDetail from "./pages/PackageDetail";
 import ViewProfilePage from './pages/ViewProfilePage';
 import EditProfilePage from './pages/EditProfilePage';
+import VehiclePage from './pages/VehiclePage';
+import OrderForm from './pages/OrderForm';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -36,6 +38,8 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/profile" element={<ViewProfilePage />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
+            <Route path="/vehicles" element={<VehiclePage />} />
+            <Route path="/order/:PackageId" element={<OrderForm />} />
           </Route>
         </Routes>
       </BrowserRouter>

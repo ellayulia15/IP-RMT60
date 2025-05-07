@@ -3,16 +3,16 @@ const { Order } = require("../models")
 module.exports = class OrderController {
     static async order(req, res) {
         try {
-            const { packageId, bookingDate } = req.body;
+            const { PackageId, bookingDate } = req.body;
             const userId = req.user.id;
 
-            if (!packageId || !bookingDate) {
+            if (!PackageId || !bookingDate) {
                 return res.status(400).json({ message: 'Package and Booking Date are required!' });
             }
 
             const order = await Order.create({
                 UserId: userId,
-                PackageId: packageId,
+                PackageId: PackageId,
                 bookingDate,
                 status: 'pending',
                 paymentUrl: null
