@@ -8,20 +8,14 @@ const OrderController = require('./controllers/OrderController');
 const VehicleController = require('./controllers/VehicleController');
 const BookingController = require('./controllers/BookingController');
 const PaymentController = require('./controllers/PaymentController');
-const { getAIResponse } = require('./helpers/openAI');
-
+const chatRoutes = require('./routes/chatRoutes');
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-app.post('/chat', async (req, res) => {
-    const { message } = req.body;
-    const aiResponse = await getAIResponse(message);
-    res.json({ response: aiResponse });
-});
+app.use('/chat', chatRoutes);
 
 app.post('/register', UserController.register);
 app.post('/login', UserController.login);
