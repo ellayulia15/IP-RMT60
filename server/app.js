@@ -34,6 +34,7 @@ app.get('/packages/:id', PackageController.packageById)
 app.get('/packages/:id/download', PackageController.downloadPdf)
 
 app.get('/vehicles', VehicleController.vehicles)
+app.get('/vehicles/:id', VehicleController.vehicleById)
 
 app.post('/order/:PackageId', authentication, OrderController.order)
 app.get('/order/history', authentication, OrderController.history)

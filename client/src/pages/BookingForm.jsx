@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router';
 import axios from 'axios';
 
 function BookingForm() {
+    const { VehicleId } = useParams();
+    const [vehicleDetail, setVehicleDetail] = useState(null);
     const [formData, setFormData] = useState({
         startDate: '',
         endDate: '',
@@ -12,6 +14,20 @@ function BookingForm() {
     });
     const navigate = useNavigate();
 
+    useEffect(() => {
+        const fetchVehicle = async () => {
+            try {
+                const { data } = await axios.get(`http://localhost:3000/vehicles/${VehicleId}`);
+                setVehicleDetail(data);
+            } catch (err) {
+                console.error(err);
+                alert('Gagal memuat data kendaraan.');
+            }
+        };
+
+        fetchVehicle();
+    }, [VehicleId]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -20,7 +36,6 @@ function BookingForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const VehicleId = 1;
             const token = localStorage.getItem('access_token');
             if (!token) {
                 alert('Anda harus login terlebih dahulu!');
@@ -39,13 +54,15 @@ function BookingForm() {
 
             if (response.status === 201) {
                 alert('Pemesanan berhasil!');
-                navigate('/vehicles');
+                navigate('/history#vehicles');
             }
         } catch (error) {
             console.error('Gagal memesan kendaraan:', error);
             alert('Terjadi kesalahan saat memesan kendaraan.');
         }
     };
+
+    if (!vehicleDetail) return <div className="text-center mt-10">Loading...</div>;
 
     return (
         <div className="min-h-screen bg-[#F5FFF5] font-sans text-gray-800 p-8 flex justify-center items-center">
@@ -56,6 +73,10 @@ function BookingForm() {
                 <h1 className="text-2xl font-bold text-[#2E8B57] mb-6 text-center">
                     Form Pemesanan Kendaraan
                 </h1>
+
+                <p className="mb-2"><strong>Kendaraan:</strong> {vehicleDetail.vehicleName}</p>
+                <p className="mb-4"><strong>Harga per Hari:</strong> Rp{vehicleDetail.pricePerDay.toLocaleString()}</p>
+
                 <div className="mb-4">
                     <label htmlFor="startDate" className="block text-gray-700 font-medium mb-2">
                         Tanggal Mulai

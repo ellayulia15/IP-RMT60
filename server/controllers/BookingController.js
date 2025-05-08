@@ -1,4 +1,4 @@
-const { Booking, Vehicle } = require("../models");
+const { User, Booking, Vehicle } = require("../models");
 
 module.exports = class BookingController {
     static async booking(req, res) {
@@ -24,6 +24,8 @@ module.exports = class BookingController {
                 destinationCity,
                 distance,
                 totalPrice,
+                status: 'Pending',
+                paymentUrl: null
             });
 
             res.status(201).json({
@@ -37,6 +39,28 @@ module.exports = class BookingController {
     }
 
     static async riwayat(req, res) {
+        try {
+            const userId = req.user.id;
 
+            const bookings = await Booking.findAll({
+                where: { UserId: userId },
+                include: [
+                    {
+                        model: User,
+                        attributes: ['fullName']
+                    },
+                    {
+                        model: Vehicle,
+                        attributes: ['vehicleName', 'capacity']
+                    }
+                ],
+                order: [['createdAt', 'DESC']]
+            });
+
+            res.status(200).json(bookings);
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
     }
 }

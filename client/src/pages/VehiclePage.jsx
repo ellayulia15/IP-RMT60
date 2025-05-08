@@ -24,7 +24,7 @@ function VehiclePage() {
         fetchVehicles();
     }, []);
 
-    const handleBooking = (vehicleId) => {
+    const handleBooking = async (vehicleId) => {
         try {
             const token = localStorage.getItem('access_token');
             if (!token) {
@@ -32,10 +32,13 @@ function VehiclePage() {
                 return navigate('/login');
             }
 
-            navigate(`/booking/${vehicleId}`);
+            const response = await axios.get(`http://localhost:3000/vehicles/${vehicleId}`);
+            if (response.status === 200) {
+                navigate(`/booking/${vehicleId}`);
+            }
         } catch (error) {
-            console.error('Error navigating to booking page:', error);
-            setErrorMessage('Terjadi kesalahan saat memproses permintaan. Silakan coba lagi.');
+            console.error('Error fetching vehicle by ID:', error);
+            setErrorMessage('Kendaraan tidak ditemukan atau terjadi kesalahan. Silakan coba lagi.');
         }
     };
 

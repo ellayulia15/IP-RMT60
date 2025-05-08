@@ -13,7 +13,7 @@ export default function HistoryPage() {
 
                 const [packageRes, vehicleRes] = await Promise.all([
                     axios.get("http://localhost:3000/order/history", { headers }),
-                    axios.get("http://localhost:3000/order/history", { headers }),
+                    axios.get("http://localhost:3000/booking/history", { headers }),
                 ]);
 
                 setPackageHistory(packageRes.data);
@@ -69,20 +69,20 @@ export default function HistoryPage() {
                     </h2>
                     {vehicleHistory.length > 0 ? (
                         <ul className="space-y-4">
-                            {vehicleHistory.map((order) => (
+                            {vehicleHistory.map((booking) => (
                                 <li
-                                    key={order.id}
+                                    key={booking.id}
                                     className="border-b pb-2 last:border-b-0"
                                 >
                                     <p className="font-bold text-lg">
-                                        {order.Vehicle.vehicleName}
+                                        {booking.Vehicle.vehicleName}
                                     </p>
                                     <p>
-                                        Harga Mulai: Rp
-                                        {parseInt(order.Vehicle.startPrice).toLocaleString()}
+                                        Harga: Rp
+                                        {parseInt(booking.totalPrice).toLocaleString()}
                                     </p>
-                                    <p>Tanggal Pemesanan: {new Date(order.bookingDate).toLocaleDateString()}</p>
-                                    <p>Status: {order.status}</p>
+                                    <p>Tanggal Pemesanan: {new Date(booking.startDate).toLocaleDateString()}</p>
+                                    <p>Status: {booking.status}</p>
                                 </li>
                             ))}
                         </ul>
