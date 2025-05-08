@@ -6,13 +6,29 @@ export default function Navbar() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem('access_token');
-        setIsLoggedIn(!!token);
+        const checkLoginStatus = () => {
+            const token = localStorage.getItem('access_token');
+            setIsLoggedIn(!!token);
+        };
+
+        checkLoginStatus();
+
+        const handleLoginStatusChange = (event) => {
+            setIsLoggedIn(event.detail.isLoggedIn);
+        };
+
+        window.addEventListener('loginStatusChanged', handleLoginStatusChange);
+
+        return () => {
+            window.removeEventListener('loginStatusChanged', handleLoginStatusChange);
+        };
     }, []);
 
     const handleLogout = () => {
         localStorage.removeItem('access_token');
         setIsLoggedIn(false);
+
+        window.dispatchEvent(new CustomEvent('loginStatusChanged', { detail: { isLoggedIn: false } }));
         navigate('/login');
     };
 
@@ -28,7 +44,7 @@ export default function Navbar() {
                     {isLoggedIn ? (
                         <>
                             <Link to="/profile" className="hover:underline">Profil</Link>
-                            <Link to="/order/history" className="hover:underline">Riwayat</Link>
+                            <Link to="/history" className="hover:underline">Riwayat</Link>
                             <button onClick={handleLogout} className="hover:underline">Keluar</button>
                         </>
                     ) : (

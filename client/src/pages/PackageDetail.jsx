@@ -10,6 +10,7 @@ function extractFileId(url) {
 export default function PackageDetail() {
     const { id } = useParams();
     const [packageDetail, setPackageDetail] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -19,6 +20,7 @@ export default function PackageDetail() {
                 setPackageDetail(response.data);
             } catch (error) {
                 console.error("Error fetching package detail:", error);
+                setErrorMessage("Gagal memuat detail paket. Silakan coba lagi.");
             }
         };
 
@@ -28,26 +30,15 @@ export default function PackageDetail() {
     const handleOrder = async () => {
         try {
             const token = localStorage.getItem("access_token");
-            if (!token) return alert("Kamu harus login terlebih dahulu!");
+            if (!token) {
+                setErrorMessage("Kamu harus login terlebih dahulu!");
+                return navigate("/login");
+            }
 
-            const response = await axios.post(
-                "http://localhost:3000/order",
-                {
-                    PackageId: +id,
-                    bookingDate: new Date(),
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            alert("Paket berhasil dipesan!");
-            navigate("/order");
+            navigate(`/order/${id}`);
         } catch (error) {
-            console.error("Gagal memesan paket:", error);
-            alert("Gagal memesan paket");
+            console.error("Error navigating to order form:", error);
+            setErrorMessage("Terjadi kesalahan saat memproses pesanan. Silakan coba lagi.");
         }
     };
 
@@ -87,6 +78,12 @@ export default function PackageDetail() {
                     Pesan Sekarang
                 </button>
             </div>
+
+            {errorMessage && (
+                <div className="mt-4 px-4 py-2 bg-red-100 text-red-700 rounded">
+                    {errorMessage}
+                </div>
+            )}
         </div>
-    );
+    )
 }

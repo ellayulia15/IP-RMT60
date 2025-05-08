@@ -1,6 +1,9 @@
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter, Routes, Route, Outlet } from "react-router";
 
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+
 import LandingPage from "./pages/LandingPages";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
@@ -10,9 +13,8 @@ import ViewProfilePage from './pages/ViewProfilePage';
 import EditProfilePage from './pages/EditProfilePage';
 import VehiclePage from './pages/VehiclePage';
 import OrderForm from './pages/OrderForm';
-
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import HistoryPage from './pages/HistoryPage';
+import BookingForm from './pages/BookingForm';
 
 function Layout() {
   return (
@@ -40,6 +42,8 @@ function App() {
             <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route path="/vehicles" element={<VehiclePage />} />
             <Route path="/order/:PackageId" element={<OrderForm />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/booking/:VehicleId" element={<BookingForm />} />
           </Route>
         </Routes>
       </BrowserRouter>

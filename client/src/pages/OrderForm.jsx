@@ -27,7 +27,7 @@ export default function OrderForm() {
         try {
             const token = localStorage.getItem("access_token");
             const { data } = await axios.post(
-                "http://localhost:3000/order",
+                "http://localhost:3000/order/history",
                 {
                     PackageId: PackageId,
                     bookingDate,
@@ -40,7 +40,7 @@ export default function OrderForm() {
             );
 
             alert("Pemesanan berhasil!");
-            navigate("/order/history");
+            navigate("/history#packages");
         } catch (err) {
             console.error(err);
             alert(err.response?.data?.message || "Gagal membuat order.");

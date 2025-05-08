@@ -1,4 +1,4 @@
-const { Order } = require("../models")
+const { Order, User, Package } = require("../models");
 
 module.exports = class OrderController {
     static async order(req, res) {
@@ -14,7 +14,7 @@ module.exports = class OrderController {
                 UserId: userId,
                 PackageId: PackageId,
                 bookingDate,
-                status: 'pending',
+                status: 'Pending',
                 paymentUrl: null
             });
 
@@ -32,4 +32,29 @@ module.exports = class OrderController {
         }
     }
 
+    static async history(req, res) {
+        try {
+            const userId = req.user.id;
+
+            const orders = await Order.findAll({
+                where: { UserId: userId },
+                include: [
+                    {
+                        model: User,
+                        attributes: ['fullName']
+                    },
+                    {
+                        model: Package,
+                        attributes: ['packageName', 'startPrice']
+                    }
+                ],
+                order: [['createdAt', 'DESC']]
+            });
+
+            res.status(200).json(orders);
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
 }

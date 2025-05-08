@@ -8,6 +8,13 @@ function LoginPage() {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
+    const handleLoginSuccess = (token) => {
+        localStorage.setItem('access_token', token);
+
+        window.dispatchEvent(new CustomEvent('loginStatusChanged', { detail: { isLoggedIn: true } }));
+        navigate('/profile');
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -19,8 +26,7 @@ function LoginPage() {
                 authType: 'manual',
             });
 
-            localStorage.setItem('access_token', response.data.access_token);
-            navigate('/profile');
+            handleLoginSuccess(response.data.access_token);
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 setError(err.response?.data?.message || 'Login gagal');
@@ -37,8 +43,7 @@ function LoginPage() {
             });
             console.log(data);
 
-            localStorage.setItem('access_token', data.access_token);
-            navigate('/profile');
+            handleLoginSuccess(data.access_token);
         } catch (err) {
             console.error('Google login error:', err);
             setError(err.response?.data?.message || 'Login dengan Google gagal');
@@ -57,7 +62,7 @@ function LoginPage() {
         );
 
         window.google.accounts.id.prompt();
-    }, []); // <== Tambahkan dependency array kosong di sini
+    }, []);
 
     return (
         <div className="min-h-screen bg-[#A7D7A7] flex items-center justify-center px-4">
