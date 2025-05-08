@@ -26,6 +26,34 @@ export default function HistoryPage() {
         fetchHistories();
     }, []);
 
+    const handleDeleteOrder = async (orderId) => {
+        try {
+            const token = localStorage.getItem("access_token");
+            const headers = { Authorization: `Bearer ${token}` };
+
+            await axios.delete(`http://localhost:3000/order/${orderId}`, { headers });
+            setPackageHistory((prev) => prev.filter((order) => order.id !== orderId));
+            alert("Riwayat pemesanan paket berhasil dihapus.");
+        } catch (error) {
+            console.error("Error deleting order:", error);
+            alert("Gagal menghapus riwayat pemesanan paket.");
+        }
+    };
+
+    const handleDeleteBooking = async (bookingId) => {
+        try {
+            const token = localStorage.getItem("access_token");
+            const headers = { Authorization: `Bearer ${token}` };
+
+            await axios.delete(`http://localhost:3000/booking/${bookingId}`, { headers });
+            setVehicleHistory((prev) => prev.filter((booking) => booking.id !== bookingId));
+            alert("Riwayat pemesanan kendaraan berhasil dihapus.");
+        } catch (error) {
+            console.error("Error deleting booking:", error);
+            alert("Gagal menghapus riwayat pemesanan kendaraan.");
+        }
+    };
+
     return (
         <div className="p-6 max-w-6xl mx-auto">
             <h1 className="text-3xl font-bold text-center text-[#2E8B57] mb-6">
@@ -54,6 +82,12 @@ export default function HistoryPage() {
                                     <p>Tanggal Pemesanan: {new Date(order.bookingDate).toLocaleDateString()}</p>
                                     <p>Status: {order.status}</p>
                                     <p>Pemesan: {order.User.fullName}</p>
+                                    <button
+                                        onClick={() => handleDeleteOrder(order.id)}
+                                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                                    >
+                                        Hapus
+                                    </button>
                                 </li>
                             ))}
                         </ul>
@@ -83,6 +117,12 @@ export default function HistoryPage() {
                                     </p>
                                     <p>Tanggal Pemesanan: {new Date(booking.startDate).toLocaleDateString()}</p>
                                     <p>Status: {booking.status}</p>
+                                    <button
+                                        onClick={() => handleDeleteBooking(booking.id)}
+                                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                                    >
+                                        Hapus
+                                    </button>
                                 </li>
                             ))}
                         </ul>

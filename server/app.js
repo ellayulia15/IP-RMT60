@@ -38,9 +38,11 @@ app.get('/vehicles/:id', VehicleController.vehicleById)
 
 app.post('/order/:PackageId', authentication, OrderController.order)
 app.get('/order/history', authentication, OrderController.history)
+app.delete('/order/:id', authentication, OrderController.deleteOrder)
 
 app.post('/booking/:VehicleId', authentication, BookingController.booking)
 app.get('/booking/history', authentication, BookingController.riwayat)
+app.delete('/booking/:id', authentication, BookingController.deleteBooking)
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)

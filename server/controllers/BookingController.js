@@ -63,4 +63,29 @@ module.exports = class BookingController {
             res.status(500).json({ message: 'Internal server error' });
         }
     }
+
+    static async deleteBooking(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+
+            const booking = await Booking.findOne({
+                where: {
+                    id,
+                    UserId: userId
+                }
+            });
+
+            if (!booking) {
+                return res.status(404).json({ message: 'Booking tidak ditemukan' });
+            }
+
+            await booking.destroy();
+
+            res.status(200).json({ message: 'Booking berhasil dihapus' });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
 }

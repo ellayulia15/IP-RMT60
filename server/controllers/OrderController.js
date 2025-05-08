@@ -57,4 +57,29 @@ module.exports = class OrderController {
             res.status(500).json({ message: 'Internal server error' });
         }
     }
+
+    static async deleteOrder(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+
+            const order = await Order.findOne({
+                where: {
+                    id,
+                    UserId: userId
+                }
+            });
+
+            if (!order) {
+                return res.status(404).json({ message: 'Order tidak ditemukan' });
+            }
+
+            await order.destroy();
+
+            res.status(200).json({ message: 'Order berhasil dihapus' });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
 }
