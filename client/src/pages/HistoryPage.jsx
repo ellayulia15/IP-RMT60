@@ -54,6 +54,54 @@ export default function HistoryPage() {
         }
     };
 
+    const handleRetryPayment = async (orderId, type) => {
+        try {
+            const token = localStorage.getItem("access_token");
+            const headers = { Authorization: `Bearer ${token}` };
+
+            const grossAmount = type === "package"
+                ? packageHistory.find((order) => order.id === orderId)?.Package.startPrice
+                : vehicleHistory.find((booking) => booking.id === orderId)?.totalPrice;
+
+            if (!grossAmount) {
+                throw new Error('Invalid gross_amount');
+            }
+
+            const response = await axios.post('http://localhost:3000/payment', {
+                order_id: orderId,
+                gross_amount: parseInt(grossAmount),
+                type: type === "package" ? "order" : "booking"
+            }, { headers });
+
+            if (response.data.redirectUrl) {
+                await axios.post('http://localhost:3000/payment/update-status', {
+                    order_id: orderId
+                }, { headers });
+
+                if (type === "package") {
+                    setPackageHistory((prev) =>
+                        prev.map((order) =>
+                            order.id === orderId ? { ...order, status: "Paid" } : order
+                        )
+                    );
+                } else {
+                    setVehicleHistory((prev) =>
+                        prev.map((booking) =>
+                            booking.id === orderId ? { ...booking, status: "Paid" } : booking
+                        )
+                    );
+                }
+
+                window.location.href = response.data.redirectUrl;
+            } else {
+                alert("URL pembayaran tidak tersedia.");
+            }
+        } catch (error) {
+            console.error("Error initiating payment:", error.response?.data || error.message);
+            alert("Gagal memproses pembayaran. Silakan coba lagi.");
+        }
+    };
+
     return (
         <div className="p-6 max-w-6xl mx-auto">
             <h1 className="text-3xl font-bold text-center text-[#2E8B57] mb-6">
@@ -88,6 +136,14 @@ export default function HistoryPage() {
                                     >
                                         Hapus
                                     </button>
+                                    {order.status !== "Paid" && (
+                                        <button
+                                            onClick={() => handleRetryPayment(order.id, "package")}
+                                            className="mt-2 ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                                        >
+                                            Bayar
+                                        </button>
+                                    )}
                                 </li>
                             ))}
                         </ul>
@@ -123,6 +179,14 @@ export default function HistoryPage() {
                                     >
                                         Hapus
                                     </button>
+                                    {booking.status !== "Paid" && (
+                                        <button
+                                            onClick={() => handleRetryPayment(booking.id, "vehicle")}
+                                            className="mt-2 ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                                        >
+                                            Bayar
+                                        </button>
+                                    )}
                                 </li>
                             ))}
                         </ul>

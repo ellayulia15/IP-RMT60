@@ -15,6 +15,8 @@ import VehiclePage from './pages/VehiclePage';
 import OrderForm from './pages/OrderForm';
 import HistoryPage from './pages/HistoryPage';
 import BookingForm from './pages/BookingForm';
+import PaymentPage from './pages/PaymentPage';
+import TransactionStatusPage from './pages/TransactionStatusPage';
 
 function Layout() {
   return (
@@ -44,6 +46,8 @@ function App() {
             <Route path="/order/:PackageId" element={<OrderForm />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/booking/:VehicleId" element={<BookingForm />} />
+            <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/transaction-status" element={<TransactionStatusPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
