@@ -1,57 +1,124 @@
-import { useParams } from "react-router";
 import { useEffect, useState } from "react";
-import axios from "axios";
-
-function extractFileId(url) {
-    const match = url.match(/\/d\/(.+?)\//);
-    return match ? match[1] : null;
-}
+import { useParams, useNavigate } from "react-router";
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchPackageById } from '../store/slices/packagesSlice';
 
 export default function PackageDetail() {
     const { id } = useParams();
-    const [packageDetail, setPackageDetail] = useState(null);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { selectedPackage: packageDetail, loading, error } = useSelector((state) => state.packages);
+    const [notification, setNotification] = useState({ type: '', message: '' });
 
     useEffect(() => {
-        const fetchPackageDetail = async () => {
-            try {
-                const response = await axios.get(`http://localhost:3000/packages/${id}`);
-                setPackageDetail(response.data);
-            } catch (error) {
-                console.error("Error fetching package detail:", error);
-            }
-        };
+        dispatch(fetchPackageById(id));
+    }, [dispatch, id]);
 
-        fetchPackageDetail();
-    }, [id]);
+    const handleDownloadPdf = async () => {
+        try {
+            window.open(`${process.env.REACT_APP_API_BASE_URL}/packages/${id}/download`, '_blank');
+        } catch (err) {
+            console.error(err);
+            setNotification({
+                type: 'error',
+                message: 'Gagal mengunduh file PDF.'
+            });
+            setTimeout(() => setNotification({ type: '', message: '' }), 3000);
+        }
+    };
 
-    if (!packageDetail) {
-        return <div className="text-center mt-10">Loading...</div>;
+    const handleOrder = () => {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+            setNotification({
+                type: 'error',
+                message: 'Anda harus login terlebih dahulu untuk memesan paket wisata.'
+            });
+            setTimeout(() => {
+                setNotification({ type: '', message: '' });
+                navigate("/login");
+            }, 2000);
+            return;
+        }
+        navigate(`/order/${id}`);
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#A7D7A7] flex items-center justify-center">
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                    <p className="text-gray-600">Memuat detail paket...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !packageDetail) {
+        return (
+            <div className="min-h-screen bg-[#A7D7A7] flex items-center justify-center">
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                    <div className="text-red-600">{error || "Data paket tidak ditemukan"}</div>
+                    <button
+                        onClick={() => navigate("/packages")}
+                        className="mt-4 px-4 py-2 bg-[#2E8B57] text-white rounded hover:bg-[#276746] transition"
+                    >
+                        Kembali ke Daftar Paket
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="p-6 max-w-4xl mx-auto text-center flex flex-col items-center">
-            <h1 className="text-3xl font-bold mb-4 text-[#2E8B57]">
-                {packageDetail.packageName}
-            </h1>
+        <div className="min-h-screen bg-[#A7D7A7] py-8">
+            {notification.message && (
+                <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${notification.type === 'success'
+                    ? 'bg-green-100 text-green-800 border border-green-200'
+                    : 'bg-red-100 text-red-800 border border-red-200'
+                    }`}>
+                    {notification.message}
+                </div>
+            )}
 
-            <img
-                src={packageDetail.imageUrl}
-                alt={packageDetail.packageName}
-                className="w-full h-auto max-h-[500px] object-contain mb-4 rounded"
-            />
+            <div className="container mx-auto px-4">
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    {packageDetail.imageUrl && (
+                        <img
+                            src={packageDetail.imageUrl}
+                            alt={packageDetail.packageName}
+                            className="w-full h-72 object-cover object-center"
+                        />
+                    )}
 
-            <p className="text-lg font-semibold text-[#2E8B57] mb-4">
-                Mulai dari Rp{parseInt(packageDetail.startPrice).toLocaleString()}
-            </p>
+                    <div className="p-6">
+                        <h1 className="text-3xl font-bold text-[#2E8B57] mb-4">
+                            {packageDetail.packageName}
+                        </h1>
 
-            <a
-                href={`https://drive.google.com/uc?export=download&id=${extractFileId(packageDetail.pdfLink)}`}
-                className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Download Itinerary
-            </a>
+                        <div className="mb-6">
+                            <p className="text-2xl font-semibold text-gray-700">
+                                Harga mulai dari: Rp{parseInt(packageDetail.startPrice).toLocaleString()}
+                            </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-4">
+                            <button
+                                onClick={handleOrder}
+                                className="px-6 py-2 bg-[#2E8B57] text-white font-semibold rounded hover:bg-[#276746] transition"
+                            >
+                                Pesan Sekarang
+                            </button>
+
+                            <button
+                                onClick={handleDownloadPdf}
+                                className="px-6 py-2 border-2 border-[#2E8B57] text-[#2E8B57] font-semibold rounded hover:bg-[#2E8B57] hover:text-white transition"
+                            >
+                                Unduh Brosur
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

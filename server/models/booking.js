@@ -65,7 +65,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     distance: DataTypes.INTEGER,
     totalPrice: DataTypes.INTEGER,
-    status: DataTypes.STRING,
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: 'Pending'
+    },
     paymentUrl: DataTypes.STRING
   }, {
     sequelize,

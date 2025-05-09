@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router';
-import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
 
 function RegisterPage() {
   const [form, setForm] = useState({
@@ -21,10 +19,7 @@ function RegisterPage() {
     e.preventDefault();
     try {
       setError('');
-      const response = await axios.post('http://localhost:3000/register', {
-        ...form,
-        authType: 'manual',
-      });
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/register`, form);
       console.log('Register sukses:', response.data);
       navigate('/login');
     } catch (error) {
@@ -91,41 +86,6 @@ function RegisterPage() {
             Daftar
           </button>
         </form>
-
-        <div className="my-4 text-center text-gray-500">atau</div>
-
-        {/* Google Login */}
-        <GoogleLogin
-          onSuccess={async (credentialResponse) => {
-            try {
-              const token = credentialResponse.credential;
-
-              if (!token) {
-                setError('Token Google tidak ditemukan!');
-                return;
-              }
-
-              const decoded = jwtDecode(token);
-              console.log('Decoded:', decoded);
-
-              const response = await axios.post('http://localhost:3000/register', {
-                googleId: decoded.sub,
-                fullName: decoded.name,
-                email: decoded.email,
-                authType: 'google',
-              });
-
-              console.log('Google register success:', response.data);
-              navigate('/login');
-            } catch (err) {
-              console.error('Error:', err);
-              setError(err.response?.data?.message || 'Google register gagal');
-            }
-          }}
-          onError={() => {
-            setError('Login dengan Google gagal');
-          }}
-        />
 
         <p className="text-center text-sm mt-6 text-gray-600">
           Sudah punya akun?{' '}

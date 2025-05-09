@@ -39,7 +39,11 @@ module.exports = (sequelize, DataTypes) => {
         notNull: { msg: 'Booking Date is required!' }
       }
     },
-    status: DataTypes.STRING,
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: 'Pending'
+    },
+
     paymentUrl: DataTypes.STRING
   }, {
     sequelize,

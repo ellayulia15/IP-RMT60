@@ -1,20 +1,20 @@
-const { Order } = require("../models")
+const { Order, User, Package } = require("../models");
 
 module.exports = class OrderController {
     static async order(req, res) {
         try {
-            const { packageId, bookingDate } = req.body;
+            const { PackageId, bookingDate } = req.body;
             const userId = req.user.id;
 
-            if (!packageId || !bookingDate) {
+            if (!PackageId || !bookingDate) {
                 return res.status(400).json({ message: 'Package and Booking Date are required!' });
             }
 
             const order = await Order.create({
                 UserId: userId,
-                PackageId: packageId,
+                PackageId: PackageId,
                 bookingDate,
-                status: 'pending',
+                status: 'Pending',
                 paymentUrl: null
             });
 
@@ -32,4 +32,54 @@ module.exports = class OrderController {
         }
     }
 
+    static async history(req, res) {
+        try {
+            const userId = req.user.id;
+
+            const orders = await Order.findAll({
+                where: { UserId: userId },
+                include: [
+                    {
+                        model: User,
+                        attributes: ['fullName']
+                    },
+                    {
+                        model: Package,
+                        attributes: ['packageName', 'startPrice']
+                    }
+                ],
+                order: [['createdAt', 'DESC']]
+            });
+
+            res.status(200).json(orders);
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
+
+    static async deleteOrder(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+
+            const order = await Order.findOne({
+                where: {
+                    id,
+                    UserId: userId
+                }
+            });
+
+            if (!order) {
+                return res.status(404).json({ message: 'Order tidak ditemukan' });
+            }
+
+            await order.destroy();
+
+            res.status(200).json({ message: 'Order berhasil dihapus' });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
 }

@@ -35,7 +35,7 @@ module.exports = {
       phoneNumber: {
         type: Sequelize.STRING
       },
-      googleId: {
+      googleToken: {
         type: Sequelize.STRING
       },
       authType: {
