@@ -1,5 +1,7 @@
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter, Routes, Route, Outlet } from "react-router";
+import { Provider } from 'react-redux';
+import { store } from './store';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -31,27 +33,29 @@ function Layout() {
 function App() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   return (
-    <GoogleOAuthProvider clientId={clientId}>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/packages" element={<PackageList />} />
-            <Route path="/packages/:id" element={<PackageDetail />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/profile" element={<ViewProfilePage />} />
-            <Route path="/profile/edit" element={<EditProfilePage />} />
-            <Route path="/vehicles" element={<VehiclePage />} />
-            <Route path="/order/:PackageId" element={<OrderForm />} />
-            <Route path="/history" element={<HistoryPage />} />
-            <Route path="/booking/:VehicleId" element={<BookingForm />} />
-            <Route path="/payment" element={<PaymentPage />} />
-            <Route path="/transaction-status" element={<TransactionStatusPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </GoogleOAuthProvider>
+    <Provider store={store}>
+      <GoogleOAuthProvider clientId={clientId}>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/packages" element={<PackageList />} />
+              <Route path="/packages/:id" element={<PackageDetail />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/profile" element={<ViewProfilePage />} />
+              <Route path="/profile/edit" element={<EditProfilePage />} />
+              <Route path="/vehicles" element={<VehiclePage />} />
+              <Route path="/order/:PackageId" element={<OrderForm />} />
+              <Route path="/history" element={<HistoryPage />} />
+              <Route path="/booking/:VehicleId" element={<BookingForm />} />
+              <Route path="/payment" element={<PaymentPage />} />
+              <Route path="/transaction-status" element={<TransactionStatusPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </GoogleOAuthProvider>
+    </Provider>
   );
 }
 

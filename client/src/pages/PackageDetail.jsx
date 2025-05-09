@@ -1,30 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import axios from "axios";
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchPackageById } from '../store/slices/packagesSlice';
 
 export default function PackageDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [packageDetail, setPackageDetail] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const dispatch = useDispatch();
+    const { selectedPackage: packageDetail, loading, error } = useSelector((state) => state.packages);
     const [notification, setNotification] = useState({ type: '', message: '' });
 
     useEffect(() => {
-        const fetchPackageDetail = async () => {
-            try {
-                const response = await axios.get(`http://localhost:3000/packages/${id}`);
-                setPackageDetail(response.data);
-            } catch (err) {
-                console.error(err);
-                setError("Gagal memuat detail paket wisata.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPackageDetail();
-    }, [id]);
+        dispatch(fetchPackageById(id));
+    }, [dispatch, id]);
 
     const handleDownloadPdf = async () => {
         try {
@@ -35,7 +23,6 @@ export default function PackageDetail() {
                 type: 'error',
                 message: 'Gagal mengunduh file PDF.'
             });
-            // Clear notification after 3 seconds
             setTimeout(() => setNotification({ type: '', message: '' }), 3000);
         }
     };
@@ -85,8 +72,9 @@ export default function PackageDetail() {
     return (
         <div className="min-h-screen bg-[#A7D7A7] py-8">
             {notification.message && (
-                <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
-                    'bg-red-100 text-red-800 border border-red-200'
+                <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${notification.type === 'success'
+                        ? 'bg-green-100 text-green-800 border border-green-200'
+                        : 'bg-red-100 text-red-800 border border-red-200'
                     }`}>
                     {notification.message}
                 </div>
@@ -98,7 +86,7 @@ export default function PackageDetail() {
                         <img
                             src={packageDetail.imageUrl}
                             alt={packageDetail.packageName}
-                            className="w-full h-80 object-cover object-center"
+                            className="w-full h-72 object-cover object-center"
                         />
                     )}
 

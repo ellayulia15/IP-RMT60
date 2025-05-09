@@ -1,28 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchPackages } from '../store/slices/packagesSlice';
 import PackageCard from '../components/PackageCard';
 
 function PackageList() {
-    const [packages, setPackages] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const dispatch = useDispatch();
+    const { packages, loading, error } = useSelector((state) => state.packages);
 
     useEffect(() => {
-        const fetchPackages = async () => {
-            try {
-                const response = await axios.get('http://localhost:3000/packages');
-                setPackages(response.data);
-            } catch (error) {
-                console.error('Gagal memuat paket:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPackages();
-    }, []);
+        dispatch(fetchPackages());
+    }, [dispatch]);
 
     if (loading) {
         return <div className="text-center py-10">Loading paket wisata...</div>;
+    }
+
+    if (error) {
+        return <div className="text-center py-10 text-red-600">Error: {error}</div>;
     }
 
     return (
@@ -36,7 +30,6 @@ function PackageList() {
                     <PackageCard key={pkg.id} pkg={pkg} />
                 ))}
             </div>
-
         </div>
     );
 }
