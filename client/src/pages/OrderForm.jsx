@@ -14,7 +14,7 @@ export default function OrderForm() {
     useEffect(() => {
         const fetchPackage = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:3000/packages/${PackageId}`);
+                const { data } = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/packages/${PackageId}`);
                 setPackageDetail(data);
             } catch (err) {
                 console.error(err);
@@ -43,7 +43,7 @@ export default function OrderForm() {
             }
 
             await axios.post(
-                "http://localhost:3000/order/history",
+                `${process.env.REACT_APP_API_BASE_URL}/order/history`,
                 {
                     PackageId: PackageId,
                     bookingDate,

@@ -4,7 +4,7 @@ import axios from 'axios';
 export const fetchPackages = createAsyncThunk(
     'packages/fetchPackages',
     async () => {
-        const response = await axios.get('http://localhost:3000/packages');
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/packages`);
         return response.data;
     }
 );
@@ -12,7 +12,7 @@ export const fetchPackages = createAsyncThunk(
 export const fetchPackageById = createAsyncThunk(
     'packages/fetchPackageById',
     async (id) => {
-        const response = await axios.get(`http://localhost:3000/packages/${id}`);
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/packages/${id}`);
         return response.data;
     }
 );

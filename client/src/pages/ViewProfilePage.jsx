@@ -11,7 +11,7 @@ function ViewProfilePage() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const { data } = await axios.get("http://localhost:3000/user", {
+                const { data } = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/user`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setProfile(data);

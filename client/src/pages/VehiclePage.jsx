@@ -11,7 +11,7 @@ function VehiclePage() {
     useEffect(() => {
         const fetchVehicles = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/vehicles');
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/vehicles`);
                 setVehicles(response.data);
             } catch (error) {
                 console.error('Error fetching vehicles:', error);
@@ -57,7 +57,7 @@ function VehiclePage() {
         <div className="min-h-screen bg-[#A7D7A7] py-8">
             {notification.message && (
                 <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
-                        'bg-red-100 text-red-800 border border-red-200'
+                    'bg-red-100 text-red-800 border border-red-200'
                     }`}>
                     {notification.message}
                 </div>

@@ -8,7 +8,7 @@ export const fetchProfile = createAsyncThunk(
             const token = localStorage.getItem('access_token');
             if (!token) throw new Error('No token found');
 
-            const response = await axios.get('http://localhost:3000/user', {
+            const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/user`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
@@ -25,7 +25,7 @@ export const updateProfile = createAsyncThunk(
             const token = localStorage.getItem('access_token');
             if (!token) throw new Error('No token found');
 
-            const response = await axios.put('http://localhost:3000/user', userData, {
+            const response = await axios.put(`${process.env.REACT_APP_API_BASE_URL}/user`, userData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
@@ -39,7 +39,7 @@ export const login = createAsyncThunk(
     'user/login',
     async (credentials, { rejectWithValue }) => {
         try {
-            const response = await axios.post('http://localhost:3000/login', credentials);
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/login`, credentials);
             localStorage.setItem('access_token', response.data.access_token);
             return response.data;
         } catch (error) {
@@ -52,7 +52,7 @@ export const googleLogin = createAsyncThunk(
     'user/googleLogin',
     async (googleToken, { rejectWithValue }) => {
         try {
-            const response = await axios.post('http://localhost:3000/login/google', { googleToken });
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/login/google`, { googleToken });
             localStorage.setItem('access_token', response.data.access_token);
             return response.data;
         } catch (error) {

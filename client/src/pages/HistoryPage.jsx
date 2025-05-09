@@ -16,8 +16,8 @@ export default function HistoryPage() {
                 const headers = { Authorization: `Bearer ${token}` };
 
                 const [packageRes, vehicleRes] = await Promise.all([
-                    axios.get("http://localhost:3000/order/history", { headers }),
-                    axios.get("http://localhost:3000/booking/history", { headers }),
+                    axios.get(`${process.env.REACT_APP_API_BASE_URL}/order/history`, { headers }),
+                    axios.get(`${process.env.REACT_APP_API_BASE_URL}/booking/history`, { headers }),
                 ]);
 
                 setPackageHistory(packageRes.data);
@@ -41,7 +41,7 @@ export default function HistoryPage() {
             const token = localStorage.getItem("access_token");
             const headers = { Authorization: `Bearer ${token}` };
 
-            await axios.delete(`http://localhost:3000/order/${orderId}`, { headers });
+            await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/order/${orderId}`, { headers });
             setPackageHistory((prev) => prev.filter((order) => order.id !== orderId));
             setNotification({
                 type: 'success',
@@ -63,7 +63,7 @@ export default function HistoryPage() {
             const token = localStorage.getItem("access_token");
             const headers = { Authorization: `Bearer ${token}` };
 
-            await axios.delete(`http://localhost:3000/booking/${bookingId}`, { headers });
+            await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/booking/${bookingId}`, { headers });
             setVehicleHistory((prev) => prev.filter((booking) => booking.id !== bookingId));
             setNotification({
                 type: 'success',
@@ -97,7 +97,7 @@ export default function HistoryPage() {
                 return;
             }
 
-            const response = await axios.post('http://localhost:3000/payment', {
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/payment`, {
                 order_id: orderId,
                 gross_amount: parseInt(grossAmount),
                 type: type === "package" ? "order" : "booking"

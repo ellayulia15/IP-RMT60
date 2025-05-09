@@ -18,7 +18,7 @@ function EditProfilePage() {
             }
 
             try {
-                const { data } = await axios.get("http://localhost:3000/user", {
+                const { data } = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/user`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setProfile(data);
@@ -46,7 +46,7 @@ function EditProfilePage() {
         try {
             setMessage("");
             const { data } = await axios.put(
-                "http://localhost:3000/user",
+                `${process.env.REACT_APP_API_BASE_URL}/user`,
                 form,
                 {
                     headers: { Authorization: `Bearer ${token}` },

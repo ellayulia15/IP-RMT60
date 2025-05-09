@@ -20,7 +20,7 @@ function BookingForm() {
     useEffect(() => {
         const fetchVehicle = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:3000/vehicles/${VehicleId}`);
+                const { data } = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/vehicles/${VehicleId}`);
                 setVehicleDetail(data);
             } catch (err) {
                 console.error(err);
@@ -54,7 +54,7 @@ function BookingForm() {
             }
 
             const response = await axios.post(
-                `http://localhost:3000/booking/${VehicleId}`,
+                `${process.env.REACT_APP_API_BASE_URL}/booking/${VehicleId}`,
                 formData,
                 {
                     headers: {

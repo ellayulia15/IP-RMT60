@@ -11,7 +11,7 @@ function PaymentPage() {
         const initiatePayment = async () => {
             try {
                 setLoading(true);
-                const response = await axios.post('http://localhost:3000/payment', {
+                const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/payment`, {
                     order_id: 'ORDER123',
                     gross_amount: 100000,
                 });

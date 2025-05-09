@@ -20,7 +20,7 @@ function LoginPage() {
 
         try {
             setError('');
-            const response = await axios.post('http://localhost:3000/login', {
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/login`, {
                 email,
                 password,
                 authType: 'manual',
@@ -38,7 +38,7 @@ function LoginPage() {
 
     async function handleCredentialResponse(response) {
         try {
-            const { data } = await axios.post('http://localhost:3000/login/google', {
+            const { data } = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/login/google`, {
                 googleToken: response.credential,
             });
             console.log(data);

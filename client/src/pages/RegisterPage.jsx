@@ -19,7 +19,7 @@ function RegisterPage() {
     e.preventDefault();
     try {
       setError('');
-      const response = await axios.post('http://localhost:3000/register', form);
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/register`, form);
       console.log('Register sukses:', response.data);
       navigate('/login');
     } catch (error) {

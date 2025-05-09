@@ -18,14 +18,14 @@ function TransactionStatusPage() {
 
         const checkStatus = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/payment/status/${order_id}`, {
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/payment/status/${order_id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
                 setStatus(response.data.status);
 
                 if (response.data.status === 'Paid') {
-                    await axios.post('http://localhost:3000/payment/update-status',
+                    await axios.post(`${process.env.REACT_APP_API_BASE_URL}/payment/update-status`,
                         { order_id },
                         { headers: { Authorization: `Bearer ${token}` } }
                     );

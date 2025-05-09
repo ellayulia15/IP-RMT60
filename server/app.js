@@ -1,4 +1,8 @@
-require('dotenv').config();
+console.log({ env: process.env.NODE_ENV });
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 const express = require('express');
 const cors = require('cors');
 const authentication = require('./middlewares/authentication');

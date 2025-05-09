@@ -52,7 +52,7 @@ function LandingPage() {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:3000/chat', {
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/chat`, {
                 message: newMessage.text
             });
 
@@ -143,8 +143,8 @@ function LandingPage() {
                                 className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div className={`max-w-[80%] p-3 rounded-lg ${msg.sender === 'user'
-                                        ? 'bg-[#2E8B57] text-white rounded-br-none'
-                                        : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                                    ? 'bg-[#2E8B57] text-white rounded-br-none'
+                                    : 'bg-gray-100 text-gray-800 rounded-bl-none'
                                     }`}>
                                     {formatResponse(msg.text)}
                                 </div>

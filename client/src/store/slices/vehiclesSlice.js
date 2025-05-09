@@ -4,7 +4,7 @@ import axios from 'axios';
 export const fetchVehicles = createAsyncThunk(
     'vehicles/fetchVehicles',
     async () => {
-        const response = await axios.get('http://localhost:3000/vehicles');
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/vehicles`);
         return response.data;
     }
 );
@@ -12,7 +12,7 @@ export const fetchVehicles = createAsyncThunk(
 export const fetchVehicleById = createAsyncThunk(
     'vehicles/fetchVehicleById',
     async (id) => {
-        const response = await axios.get(`http://localhost:3000/vehicles/${id}`);
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/vehicles/${id}`);
         return response.data;
     }
 );
