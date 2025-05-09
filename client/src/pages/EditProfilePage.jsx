@@ -79,7 +79,6 @@ function EditProfilePage() {
             <form onSubmit={handleSubmit} className="space-y-4">
                 <Input label="Nama Lengkap" name="fullName" value={form.fullName || ""} onChange={handleChange} />
                 <Input label="NIK" name="nik" value={form.nik || ""} onChange={handleChange} />
-                {/* <Input label="Jenis Kelamin" name="gender" value={form.gender || ""} onChange={handleChange} /> */}
                 <label className="block text-sm font-medium mb-1">Jenis Kelamin</label>
                 <select
                     name="gender"

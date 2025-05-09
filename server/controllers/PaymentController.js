@@ -1,4 +1,5 @@
 const midtransClient = require('midtrans-client');
+const { Order, Booking } = require('../models');
 
 const snap = new midtransClient.Snap({
     isProduction: false,
@@ -42,24 +43,29 @@ class PaymentController {
         try {
             const notification = req.body;
             const orderId = notification.order_id;
+            const transactionStatus = notification.transaction_status;
+            const fraudStatus = notification.fraud_status;
 
-            const response = await core.transaction.status(orderId);
-            const { transaction_status, fraud_status } = response;
+            console.log(`Transaction notification received. Order ID: ${orderId}`);
+            console.log(`Transaction status: ${transactionStatus}`);
+            console.log(`Fraud status: ${fraudStatus}`);
 
-            console.log(`Transaction ID: ${orderId} | Status: ${transaction_status} | Fraud: ${fraud_status}`);
+            const [type, id] = orderId.split('-');
 
-            if (transaction_status === 'capture') {
-                if (fraud_status === 'accept') {
-                    console.log(`Transaction ${orderId} captured and accepted.`);
-                } else {
-                    console.log(`Transaction ${orderId} captured but flagged as fraud.`);
+            if (transactionStatus === 'capture') {
+                if (fraudStatus === 'challenge') {
+                    await PaymentController.updateStatus(type, id, 'Pending');
+                } else if (fraudStatus === 'accept') {
+                    await PaymentController.updateStatus(type, id, 'Paid');
                 }
-            } else if (transaction_status === 'settlement') {
-                console.log(`Transaction ${orderId} successfully settled.`);
-            } else if (transaction_status === 'pending') {
-                console.log(`Transaction ${orderId} is pending.`);
-            } else {
-                console.log(`Transaction ${orderId} failed or cancelled.`);
+            } else if (transactionStatus === 'settlement') {
+                await PaymentController.updateStatus(type, id, 'Paid');
+            } else if (transactionStatus === 'cancel' ||
+                transactionStatus === 'deny' ||
+                transactionStatus === 'expire') {
+                await PaymentController.updateStatus(type, id, 'Failed');
+            } else if (transactionStatus === 'pending') {
+                await PaymentController.updateStatus(type, id, 'Pending');
             }
 
             res.status(200).send('OK');
@@ -77,7 +83,8 @@ class PaymentController {
         }
 
         try {
-            console.log(`Updating transaction status for order_id: ${order_id}`);
+            const [type, id] = order_id.split('-');
+            await PaymentController.updateStatus(type, id, 'Paid');
 
             res.status(200).json({ message: 'Transaction status updated to Paid.' });
         } catch (error) {
@@ -95,10 +102,12 @@ class PaymentController {
 
         try {
             const response = await core.transaction.status(order_id);
-            const { transaction_status } = response;
+            const { transaction_status, fraud_status } = response;
 
             let status;
-            if (transaction_status === 'capture' || transaction_status === 'settlement') {
+            if (transaction_status === 'capture') {
+                status = fraud_status === 'accept' ? 'Paid' : 'Pending';
+            } else if (transaction_status === 'settlement') {
                 status = 'Paid';
             } else if (transaction_status === 'pending') {
                 status = 'Pending';
@@ -110,6 +119,26 @@ class PaymentController {
         } catch (error) {
             console.error('Error fetching transaction status:', error.message);
             res.status(500).json({ error: 'Failed to fetch transaction status.' });
+        }
+    }
+
+    static async updateStatus(type, id, status) {
+        try {
+            if (type === 'order') {
+                await Order.update(
+                    { status },
+                    { where: { id } }
+                );
+            } else if (type === 'booking') {
+                await Booking.update(
+                    { status },
+                    { where: { id } }
+                );
+            }
+            console.log(`Updated ${type} ${id} status to ${status}`);
+        } catch (error) {
+            console.error(`Error updating ${type} status:`, error);
+            throw error;
         }
     }
 }

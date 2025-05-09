@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router";
 
 export default function HistoryPage() {
     const [packageHistory, setPackageHistory] = useState([]);
     const [vehicleHistory, setVehicleHistory] = useState([]);
+    const [notification, setNotification] = useState({ type: '', message: '' });
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchHistories = async () => {
@@ -20,6 +24,12 @@ export default function HistoryPage() {
                 setVehicleHistory(vehicleRes.data);
             } catch (error) {
                 console.error("Error fetching histories:", error);
+                setNotification({
+                    type: 'error',
+                    message: 'Gagal memuat riwayat pemesanan. Silakan coba lagi nanti.'
+                });
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -33,10 +43,18 @@ export default function HistoryPage() {
 
             await axios.delete(`http://localhost:3000/order/${orderId}`, { headers });
             setPackageHistory((prev) => prev.filter((order) => order.id !== orderId));
-            alert("Riwayat pemesanan paket berhasil dihapus.");
+            setNotification({
+                type: 'success',
+                message: 'Riwayat pemesanan paket berhasil dihapus.'
+            });
+
+            setTimeout(() => setNotification({ type: '', message: '' }), 3000);
         } catch (error) {
             console.error("Error deleting order:", error);
-            alert("Gagal menghapus riwayat pemesanan paket.");
+            setNotification({
+                type: 'error',
+                message: 'Gagal menghapus riwayat pemesanan paket.'
+            });
         }
     };
 
@@ -47,10 +65,18 @@ export default function HistoryPage() {
 
             await axios.delete(`http://localhost:3000/booking/${bookingId}`, { headers });
             setVehicleHistory((prev) => prev.filter((booking) => booking.id !== bookingId));
-            alert("Riwayat pemesanan kendaraan berhasil dihapus.");
+            setNotification({
+                type: 'success',
+                message: 'Riwayat pemesanan kendaraan berhasil dihapus.'
+            });
+
+            setTimeout(() => setNotification({ type: '', message: '' }), 3000);
         } catch (error) {
             console.error("Error deleting booking:", error);
-            alert("Gagal menghapus riwayat pemesanan kendaraan.");
+            setNotification({
+                type: 'error',
+                message: 'Gagal menghapus riwayat pemesanan kendaraan.'
+            });
         }
     };
 
@@ -64,7 +90,11 @@ export default function HistoryPage() {
                 : vehicleHistory.find((booking) => booking.id === orderId)?.totalPrice;
 
             if (!grossAmount) {
-                throw new Error('Invalid gross_amount');
+                setNotification({
+                    type: 'error',
+                    message: 'Data pembayaran tidak valid.'
+                });
+                return;
             }
 
             const response = await axios.post('http://localhost:3000/payment', {
@@ -74,125 +104,144 @@ export default function HistoryPage() {
             }, { headers });
 
             if (response.data.redirectUrl) {
-                await axios.post('http://localhost:3000/payment/update-status', {
-                    order_id: orderId
-                }, { headers });
-
-                if (type === "package") {
-                    setPackageHistory((prev) =>
-                        prev.map((order) =>
-                            order.id === orderId ? { ...order, status: "Paid" } : order
-                        )
-                    );
-                } else {
-                    setVehicleHistory((prev) =>
-                        prev.map((booking) =>
-                            booking.id === orderId ? { ...booking, status: "Paid" } : booking
-                        )
-                    );
-                }
-
+                navigate('/transaction-status', {
+                    state: {
+                        order_id: `${type === "package" ? "order" : "booking"}-${orderId}`,
+                        returnUrl: '/history'
+                    }
+                });
                 window.location.href = response.data.redirectUrl;
             } else {
-                alert("URL pembayaran tidak tersedia.");
+                setNotification({
+                    type: 'error',
+                    message: 'URL pembayaran tidak tersedia.'
+                });
             }
         } catch (error) {
             console.error("Error initiating payment:", error.response?.data || error.message);
-            alert("Gagal memproses pembayaran. Silakan coba lagi.");
+            setNotification({
+                type: 'error',
+                message: 'Gagal memproses pembayaran. Silakan coba lagi.'
+            });
         }
     };
 
-    return (
-        <div className="p-6 max-w-6xl mx-auto">
-            <h1 className="text-3xl font-bold text-center text-[#2E8B57] mb-6">
-                Riwayat Pemesanan
-            </h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Package History Section */}
-                <div className="bg-white shadow-md rounded p-4">
-                    <h2 className="text-2xl font-semibold text-[#2E8B57] mb-4">
-                        Pemesanan Paket Wisata
-                    </h2>
-                    {packageHistory.length > 0 ? (
-                        <ul className="space-y-4">
-                            {packageHistory.map((order) => (
-                                <li
-                                    key={order.id}
-                                    className="border-b pb-2 last:border-b-0"
-                                >
-                                    <p className="font-bold text-lg">
-                                        {order.Package.packageName}
-                                    </p>
-                                    <p>
-                                        Harga Mulai: Rp
-                                        {parseInt(order.Package.startPrice).toLocaleString()}
-                                    </p>
-                                    <p>Tanggal Pemesanan: {new Date(order.bookingDate).toLocaleDateString()}</p>
-                                    <p>Status: {order.status}</p>
-                                    <p>Pemesan: {order.User.fullName}</p>
-                                    <button
-                                        onClick={() => handleDeleteOrder(order.id)}
-                                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                                    >
-                                        Hapus
-                                    </button>
-                                    {order.status !== "Paid" && (
-                                        <button
-                                            onClick={() => handleRetryPayment(order.id, "package")}
-                                            className="mt-2 ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                                        >
-                                            Bayar
-                                        </button>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="text-gray-500">Belum ada riwayat pemesanan paket wisata.</p>
-                    )}
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#A7D7A7] flex items-center justify-center">
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                    <p className="text-gray-600">Memuat data...</p>
                 </div>
+            </div>
+        );
+    }
 
-                {/* Vehicle History Section */}
-                <div className="bg-white shadow-md rounded p-4">
-                    <h2 className="text-2xl font-semibold text-[#2E8B57] mb-4">
-                        Pemesanan Sewa Kendaraan
-                    </h2>
-                    {vehicleHistory.length > 0 ? (
-                        <ul className="space-y-4">
-                            {vehicleHistory.map((booking) => (
-                                <li
-                                    key={booking.id}
-                                    className="border-b pb-2 last:border-b-0"
-                                >
-                                    <p className="font-bold text-lg">
-                                        {booking.Vehicle.vehicleName}
-                                    </p>
-                                    <p>
-                                        Harga: Rp
-                                        {parseInt(booking.totalPrice).toLocaleString()}
-                                    </p>
-                                    <p>Tanggal Pemesanan: {new Date(booking.startDate).toLocaleDateString()}</p>
-                                    <p>Status: {booking.status}</p>
-                                    <button
-                                        onClick={() => handleDeleteBooking(booking.id)}
-                                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+    return (
+        <div className="min-h-screen bg-[#A7D7A7] py-8">
+            {notification.message && (
+                <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+                    notification.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+                        'bg-blue-100 text-blue-800 border border-blue-200'
+                    }`}>
+                    {notification.message}
+                </div>
+            )}
+
+            <div className="max-w-6xl mx-auto px-4">
+                <h1 className="text-3xl font-bold text-center text-[#2E8B57] mb-6">
+                    Riwayat Pemesanan
+                </h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Package History Section */}
+                    <div className="bg-white shadow-md rounded p-4">
+                        <h2 className="text-2xl font-semibold text-[#2E8B57] mb-4">
+                            Pemesanan Paket Wisata
+                        </h2>
+                        {packageHistory.length > 0 ? (
+                            <ul className="space-y-4">
+                                {packageHistory.map((order) => (
+                                    <li
+                                        key={order.id}
+                                        className="border-b pb-2 last:border-b-0"
                                     >
-                                        Hapus
-                                    </button>
-                                    {booking.status !== "Paid" && (
-                                        <button
-                                            onClick={() => handleRetryPayment(booking.id, "vehicle")}
-                                            className="mt-2 ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                                        >
-                                            Bayar
-                                        </button>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="text-gray-500">Belum ada riwayat pemesanan sewa kendaraan.</p>
-                    )}
+                                        <p className="font-bold text-lg">
+                                            {order.Package.packageName}
+                                        </p>
+                                        <p>
+                                            Harga Mulai: Rp
+                                            {parseInt(order.Package.startPrice).toLocaleString()}
+                                        </p>
+                                        <p>Tanggal Pemesanan: {new Date(order.bookingDate).toLocaleDateString()}</p>
+                                        <p>Status: {order.status}</p>
+                                        <p>Pemesan: {order.User.fullName}</p>
+                                        <div className="flex gap-2 mt-2">
+                                            <button
+                                                onClick={() => handleDeleteOrder(order.id)}
+                                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                                            >
+                                                Hapus
+                                            </button>
+                                            {order.status !== "Paid" && (
+                                                <button
+                                                    onClick={() => handleRetryPayment(order.id, "package")}
+                                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                                                >
+                                                    Bayar
+                                                </button>
+                                            )}
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500">Belum ada riwayat pemesanan paket wisata.</p>
+                        )}
+                    </div>
+
+                    {/* Vehicle History Section */}
+                    <div className="bg-white shadow-md rounded p-4">
+                        <h2 className="text-2xl font-semibold text-[#2E8B57] mb-4">
+                            Pemesanan Sewa Kendaraan
+                        </h2>
+                        {vehicleHistory.length > 0 ? (
+                            <ul className="space-y-4">
+                                {vehicleHistory.map((booking) => (
+                                    <li
+                                        key={booking.id}
+                                        className="border-b pb-2 last:border-b-0"
+                                    >
+                                        <p className="font-bold text-lg">
+                                            {booking.Vehicle.vehicleName}
+                                        </p>
+                                        <p>
+                                            Harga: Rp
+                                            {parseInt(booking.totalPrice).toLocaleString()}
+                                        </p>
+                                        <p>Tanggal Pemesanan: {new Date(booking.startDate).toLocaleDateString()}</p>
+                                        <p>Status: {booking.status}</p>
+                                        <div className="flex gap-2 mt-2">
+                                            <button
+                                                onClick={() => handleDeleteBooking(booking.id)}
+                                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                                            >
+                                                Hapus
+                                            </button>
+                                            {booking.status !== "Paid" && (
+                                                <button
+                                                    onClick={() => handleRetryPayment(booking.id, "vehicle")}
+                                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                                                >
+                                                    Bayar
+                                                </button>
+                                            )}
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500">Belum ada riwayat pemesanan sewa kendaraan.</p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

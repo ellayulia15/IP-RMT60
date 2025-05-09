@@ -39,7 +39,7 @@ app.get('/booking/history', authentication, BookingController.riwayat);
 app.delete('/booking/:id', authentication, BookingController.deleteBooking);
 
 app.post('/payment', authentication, PaymentController.createTransaction);
-app.post('/payment/notification', authentication, PaymentController.handleNotification);
+app.post('/payment/notification', PaymentController.handleNotification);
 app.post('/payment/update-status', authentication, PaymentController.updateTransactionStatus);
 app.get('/payment/status/:order_id', authentication, PaymentController.getTransactionStatus);
 
